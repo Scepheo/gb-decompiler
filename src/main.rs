@@ -22,8 +22,11 @@ fn main() {
     let filename = get_filename();
     let data = load_file(&filename);
 
-    for i in 0x0100..0x0104 {
-        let instruction = Instruction::decode_at(&data, i);
+    let mut address = 0x0100;
+
+    while address < 0x1000 {
+        let instruction = Instruction::decode_at(&data, address);
+        address += instruction.size();
         println!("{}", instruction);
     }
 }
