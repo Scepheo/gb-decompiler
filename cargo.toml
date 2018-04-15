@@ -1,7 +1,6 @@
 [package]
-name = "rust-test"
+name = "gb-decompiler"
 version = "0.0.1"
 authors = ["Scepheo <scepheo@gmail.com>"]
 
 [dependencies]
-rand = "0.3.14"

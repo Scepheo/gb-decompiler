@@ -1,35 +1,29 @@
-extern crate rand;
+mod instructions;
 
-use std::io;
-use std::cmp::Ordering;
-use rand::Rng;
+use std::env;
+use std::io::prelude::*;
+use std::fs::File;
+use instructions::Instruction;
+
+
+fn get_filename() -> String {
+    let mut args = env::args();
+    args.nth(1).expect("Filename is required")
+}
+
+fn load_file(filename: &str) -> Box<[u8]> {
+    let mut file = File::open(&filename).expect("file not found");
+    let mut data = Vec::new();
+    file.read_to_end(&mut data).expect("error reading file");
+    data.into_boxed_slice()
+}
 
 fn main() {
-    println!("Let's play a guessing game!");
+    let filename = get_filename();
+    let data = load_file(&filename);
 
-    let secret_number = rand::thread_rng().gen_range(1, 101);
-
-    loop {
-        println!("Guess a number:");
-
-        let mut guess = String::new();
-
-        io::stdin()
-            .read_line(&mut guess)
-            .expect("Failed to read line");
-
-        let guess: i32 = match guess.trim().parse() {
-            Ok(number) => number,
-            Err(_) => continue
-        };
-
-        match guess.cmp(&secret_number) {
-            Ordering::Less => println!("Too small!"),
-            Ordering::Greater => println!("Too big!"),
-            Ordering::Equal => {
-                println!("Correct!");
-                break;
-            }
-        }
+    for i in 0x0100..0x0104 {
+        let instruction = Instruction::decode_at(&data, i);
+        println!("{}", instruction);
     }
 }
