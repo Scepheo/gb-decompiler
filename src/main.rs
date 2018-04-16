@@ -5,7 +5,6 @@ use std::io::prelude::*;
 use std::fs::File;
 use instructions::Instruction;
 
-
 fn get_filename() -> String {
     let mut args = env::args();
     args.nth(1).expect("Filename is required")
@@ -24,7 +23,7 @@ fn main() {
 
     let mut address = 0x0100;
 
-    while address < 0x1000 {
+    while address < 0x0104 {
         let instruction = Instruction::decode_at(&data, address);
         address += instruction.size();
         println!("{}", instruction);
