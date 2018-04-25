@@ -1,9 +1,9 @@
 use std::fmt;
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct d8 {
-    value: u8
+    pub value: u8
 }
 
 impl d8 {
@@ -19,9 +19,9 @@ impl fmt::Display for d8 {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct d16 {
-    value: u16
+    pub value: u16
 }
 
 impl d16 {
@@ -39,9 +39,9 @@ impl fmt::Display for d16 {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct a8 {
-    value: u8
+    pub value: u8
 }
 
 impl a8 {
@@ -57,9 +57,9 @@ impl fmt::Display for a8 {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct a16 {
-    value: u16
+    pub value: u16
 }
 
 impl a16 {
@@ -77,9 +77,9 @@ impl fmt::Display for a16 {
 }
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct r8 {
-    value: i8
+    pub value: i8
 }
 
 impl r8 {

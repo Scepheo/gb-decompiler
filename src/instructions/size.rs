@@ -206,7 +206,7 @@ impl Instruction {
             Instruction::RET_Z => 1,
             Instruction::RET => 1,
             Instruction::JP_Z_a16(_) => 3,
-            Instruction::PREFIX_CB => 1,
+            Instruction::PREFIX_CB(_) => 2,
             Instruction::CALL_Z_a16(_) => 3,
             Instruction::CALL_a16(_) => 3,
             Instruction::ADC_A_d8(_) => 2,
