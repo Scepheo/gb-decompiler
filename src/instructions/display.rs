@@ -249,8 +249,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_A_pa16(value) => write!(f, "LD A,({})", value),
             Instruction::EI => write!(f, "EI"),
             Instruction::CP_d8(value) => write!(f, "CP {}", value),
-            Instruction::RST_38H => write!(f, "RST 38H"),
-            _ => write!(f, "UNKNOWN")
+            Instruction::RST_38H => write!(f, "RST 38H")
         }
     }
 }

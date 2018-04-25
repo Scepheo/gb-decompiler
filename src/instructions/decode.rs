@@ -2,11 +2,15 @@ use super::arguments::*;
 use super::opcodes::Instruction;
 use super::opcodes::CBInstruction;
 
+fn unused_opcode(address: usize, opcode: u8) -> ! {
+    panic!("Unused opcode {0:02X} @ {1:04X}", opcode, address);
+}
+
 impl Instruction {
     pub fn decode_at(data: &Box<[u8]>, address: usize) -> Instruction {
-        let op_code = data[address];
+        let opcode = data[address];
 
-        match op_code {
+        match opcode {
             0x00 => Instruction::NOP,
             0x01 => Instruction::LD_BC_d16(d16::at(data, address + 1)),
             0x02 => Instruction::LD_pBC_A,
@@ -231,7 +235,7 @@ impl Instruction {
             0xD0 => Instruction::RET_NC,
             0xD1 => Instruction::POP_DE,
             0xD2 => Instruction::JP_NC_a16(a16::at(data, address + 1)),
-            0xD3 => Instruction::Unknown,
+            0xD3 => unused_opcode(address, opcode),
             0xD4 => Instruction::CALL_NC_a16(a16::at(data, address + 1)),
             0xD5 => Instruction::PUSH_DE,
             0xD6 => Instruction::SUB_d8(d8::at(data, address + 1)),
@@ -239,26 +243,26 @@ impl Instruction {
             0xD8 => Instruction::RET_C,
             0xD9 => Instruction::RETI,
             0xDA => Instruction::JP_C_a16(a16::at(data, address + 1)),
-            0xDB => Instruction::Unknown,
+            0xDB => unused_opcode(address, opcode),
             0xDC => Instruction::CALL_C_a16(a16::at(data, address + 1)),
-            0xDD => Instruction::Unknown,
+            0xDD => unused_opcode(address, opcode),
             0xDE => Instruction::SBC_A_d8(d8::at(data, address + 1)),
             0xDF => Instruction::RST_18H,
 
             0xE0 => Instruction::LDH_pa8_A(a8::at(data, address + 1)),
             0xE1 => Instruction::POP_HL,
             0xE2 => Instruction::LD_pC_A,
-            0xE3 => Instruction::Unknown,
-            0xE4 => Instruction::Unknown,
+            0xE3 => unused_opcode(address, opcode),
+            0xE4 => unused_opcode(address, opcode),
             0xE5 => Instruction::PUSH_HL,
             0xE6 => Instruction::AND_d8(d8::at(data, address + 1)),
             0xE7 => Instruction::RST_20H,
             0xE8 => Instruction::ADD_SP_r8(r8::at(data, address + 1)),
             0xE9 => Instruction::JP_pHL,
             0xEA => Instruction::LD_pa16_A(a16::at(data, address + 1)),
-            0xEB => Instruction::Unknown,
-            0xEC => Instruction::Unknown,
-            0xED => Instruction::Unknown,
+            0xEB => unused_opcode(address, opcode),
+            0xEC => unused_opcode(address, opcode),
+            0xED => unused_opcode(address, opcode),
             0xEE => Instruction::XOR_d8(d8::at(data, address + 1)),
             0xEF => Instruction::RST_28H,
 
@@ -266,7 +270,7 @@ impl Instruction {
             0xF1 => Instruction::POP_AF,
             0xF2 => Instruction::LD_A_pC,
             0xF3 => Instruction::DI,
-            0xF4 => Instruction::Unknown,
+            0xF4 => unused_opcode(address, opcode),
             0xF5 => Instruction::PUSH_AF,
             0xF6 => Instruction::OR_d8(d8::at(data, address + 1)),
             0xF7 => Instruction::RST_30H,
@@ -274,8 +278,8 @@ impl Instruction {
             0xF9 => Instruction::LD_SP_HL,
             0xFA => Instruction::LD_A_pa16(a16::at(data, address + 1)),
             0xFB => Instruction::EI,
-            0xFC => Instruction::Unknown,
-            0xFD => Instruction::Unknown,
+            0xFC => unused_opcode(address, opcode),
+            0xFD => unused_opcode(address, opcode),
             0xFE => Instruction::CP_d8(d8::at(data, address + 1)),
             0xFF => Instruction::RST_38H,
 

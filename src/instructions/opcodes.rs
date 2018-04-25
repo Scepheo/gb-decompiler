@@ -3,8 +3,6 @@ use super::arguments::*;
 #[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug)]
 pub enum Instruction {
-    Unknown,
-
     NOP,
     LD_BC_d16(d16),
     LD_pBC_A,
