@@ -20,5 +20,9 @@ fn load_rom(filename: &str) -> Box<[u8]> {
 fn main() {
     let filename = get_filename();
     let rom = load_rom(&filename);
-    analyzer::analyse(&rom);
+
+    match analyzer::analyse(&rom) {
+        Ok(data) => println!("ROM Analysis successful"),
+        Err(msg) => println!("Error reading ROM: {}", msg)
+    }
 }
