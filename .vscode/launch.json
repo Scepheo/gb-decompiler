@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/gb-decompiler.exe",
             "preLaunchTask": "Rust: cargo build",
-            "args": [ "${workspaceFolder}/roms/test_rom.gb" ],
+            "args": [ "${workspaceFolder}/roms/test.gb" ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

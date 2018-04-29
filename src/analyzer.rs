@@ -71,6 +71,20 @@ fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), 
     }
 }
 
+fn get_rst_value(instruction: Instruction) -> usize {
+    match instruction {
+        Instruction::RST_00H => 0x00,
+        Instruction::RST_08H => 0x08,
+        Instruction::RST_10H => 0x10,
+        Instruction::RST_18H => 0x18,
+        Instruction::RST_20H => 0x20,
+        Instruction::RST_28H => 0x28,
+        Instruction::RST_30H => 0x30,
+        Instruction::RST_38H => 0x38,
+        _ => panic!("Not a RST instruction"),
+    }
+}
+
 fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<Vec<Todo>, String> {
     let mut next_address = todo.start_address;
     let mut result = Vec::new();
@@ -194,117 +208,21 @@ fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<
 
                 return Ok(result);
             }
-            Instruction::RST_00H => {
+            Instruction::RST_00H
+            | Instruction::RST_08H
+            | Instruction::RST_10H
+            | Instruction::RST_18H
+            | Instruction::RST_20H
+            | Instruction::RST_28H
+            | Instruction::RST_30H
+            | Instruction::RST_38H => {
+                let value = get_rst_value(instruction);
+
                 result.push(Todo {
-                    start_address: 0x00,
+                    start_address: value,
                     return_address: Some(next_address),
                 });
-                data.add_ancestor(current_address, 0x00);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_08H => {
-                result.push(Todo {
-                    start_address: 0x08,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x08);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_10H => {
-                result.push(Todo {
-                    start_address: 0x10,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x10);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_18H => {
-                result.push(Todo {
-                    start_address: 0x18,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x18);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_20H => {
-                result.push(Todo {
-                    start_address: 0x20,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x20);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_28H => {
-                result.push(Todo {
-                    start_address: 0x28,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x28);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_30H => {
-                result.push(Todo {
-                    start_address: 0x30,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x30);
-
-                result.push(Todo {
-                    start_address: next_address,
-                    ..todo
-                });
-                data.add_ancestor(current_address, next_address);
-
-                return Ok(result);
-            }
-            Instruction::RST_38H => {
-                result.push(Todo {
-                    start_address: 0x38,
-                    return_address: Some(next_address),
-                });
-                data.add_ancestor(current_address, 0x38);
+                data.add_ancestor(current_address, value);
 
                 result.push(Todo {
                     start_address: next_address,
