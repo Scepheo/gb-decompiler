@@ -247,7 +247,7 @@ pub enum Instruction {
     LD_A_pa16(a16),
     EI,
     CP_d8(d8),
-    RST_38H
+    RST_38H,
 }
 
 #[allow(non_camel_case_types)]
@@ -508,5 +508,5 @@ pub enum CBInstruction {
     SET_7_H,
     SET_7_L,
     SET_7_pHL,
-    SET_7_A
+    SET_7_A,
 }

@@ -1,6 +1,6 @@
-use std::fmt;
-use super::opcodes::Instruction;
 use super::opcodes::CBInstruction;
+use super::opcodes::Instruction;
+use std::fmt;
 
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -21,6 +21,7 @@ impl fmt::Display for Instruction {
             Instruction::DEC_C => write!(f, "DEC C"),
             Instruction::LD_C_d8(value) => write!(f, "LD C,{}", value),
             Instruction::RRCA => write!(f, "RRCA"),
+
             Instruction::STOP_0 => write!(f, "STOP 0"),
             Instruction::LD_DE_d16(value) => write!(f, "LD DE,{}", value),
             Instruction::LD_pDE_A => write!(f, "LD (DE),A"),
@@ -37,6 +38,7 @@ impl fmt::Display for Instruction {
             Instruction::DEC_E => write!(f, "DEC E"),
             Instruction::LD_E_d8(value) => write!(f, "LD E,{}", value),
             Instruction::RRA => write!(f, "RRA"),
+
             Instruction::JR_NZ_r8(value) => write!(f, "JR NZ,{}", value),
             Instruction::LD_HL_d16(value) => write!(f, "LD HL,{}", value),
             Instruction::LD_pHLp_A => write!(f, "LD (HL+),A"),
@@ -53,6 +55,7 @@ impl fmt::Display for Instruction {
             Instruction::DEC_L => write!(f, "DEC L"),
             Instruction::LD_L_d8(value) => write!(f, "LD L,{}", value),
             Instruction::CPL => write!(f, "CPL"),
+
             Instruction::JR_NC_r8(value) => write!(f, "JR NC,{}", value),
             Instruction::LD_SP_d16(value) => write!(f, "LD SP,{}", value),
             Instruction::LD_pHLm_A => write!(f, "LD (HL-),A"),
@@ -69,6 +72,7 @@ impl fmt::Display for Instruction {
             Instruction::DEC_A => write!(f, "DEC A"),
             Instruction::LD_A_d8(value) => write!(f, "LD A,{}", value),
             Instruction::CCF => write!(f, "CCF"),
+
             Instruction::LD_B_B => write!(f, "LD B,B"),
             Instruction::LD_B_C => write!(f, "LD B,C"),
             Instruction::LD_B_D => write!(f, "LD B,D"),
@@ -85,6 +89,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_C_L => write!(f, "LD C,L"),
             Instruction::LD_C_pHL => write!(f, "LD C,(HL)"),
             Instruction::LD_C_A => write!(f, "LD C,A"),
+
             Instruction::LD_D_B => write!(f, "LD D,B"),
             Instruction::LD_D_C => write!(f, "LD D,C"),
             Instruction::LD_D_D => write!(f, "LD D,D"),
@@ -101,6 +106,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_E_L => write!(f, "LD E,L"),
             Instruction::LD_E_pHL => write!(f, "LD E,(HL)"),
             Instruction::LD_E_A => write!(f, "LD E,A"),
+
             Instruction::LD_H_B => write!(f, "LD H,B"),
             Instruction::LD_H_C => write!(f, "LD H,C"),
             Instruction::LD_H_D => write!(f, "LD H,D"),
@@ -117,6 +123,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_L_L => write!(f, "LD L,L"),
             Instruction::LD_L_pHL => write!(f, "LD L,(HL)"),
             Instruction::LD_L_A => write!(f, "LD L,A"),
+
             Instruction::LD_pHL_B => write!(f, "LD (HL),B"),
             Instruction::LD_pHL_C => write!(f, "LD (HL),C"),
             Instruction::LD_pHL_D => write!(f, "LD (HL),D"),
@@ -133,6 +140,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_A_L => write!(f, "LD A,L"),
             Instruction::LD_A_pHL => write!(f, "LD A,(HL)"),
             Instruction::LD_A_A => write!(f, "LD A,A"),
+
             Instruction::ADD_A_B => write!(f, "ADD A,B"),
             Instruction::ADD_A_C => write!(f, "ADD A,C"),
             Instruction::ADD_A_D => write!(f, "ADD A,D"),
@@ -149,6 +157,7 @@ impl fmt::Display for Instruction {
             Instruction::ADC_A_L => write!(f, "ADC A,L"),
             Instruction::ADC_A_pHL => write!(f, "ADC A,(HL)"),
             Instruction::ADC_A_A => write!(f, "ADC A,A"),
+
             Instruction::SUB_B => write!(f, "SUB B"),
             Instruction::SUB_C => write!(f, "SUB C"),
             Instruction::SUB_D => write!(f, "SUB D"),
@@ -165,6 +174,7 @@ impl fmt::Display for Instruction {
             Instruction::SBC_A_L => write!(f, "SBC A,L"),
             Instruction::SBC_A_pHL => write!(f, "SBC A,(HL)"),
             Instruction::SBC_A_A => write!(f, "SBC A,A"),
+
             Instruction::AND_B => write!(f, "AND B"),
             Instruction::AND_C => write!(f, "AND C"),
             Instruction::AND_D => write!(f, "AND D"),
@@ -181,6 +191,7 @@ impl fmt::Display for Instruction {
             Instruction::XOR_L => write!(f, "XOR L"),
             Instruction::XOR_pHL => write!(f, "XOR (HL)"),
             Instruction::XOR_A => write!(f, "XOR A"),
+
             Instruction::OR_B => write!(f, "OR B"),
             Instruction::OR_C => write!(f, "OR C"),
             Instruction::OR_D => write!(f, "OR D"),
@@ -197,6 +208,7 @@ impl fmt::Display for Instruction {
             Instruction::CP_L => write!(f, "CP L"),
             Instruction::CP_pHL => write!(f, "CP (HL)"),
             Instruction::CP_A => write!(f, "CP A"),
+
             Instruction::RET_NZ => write!(f, "RET NZ"),
             Instruction::POP_BC => write!(f, "POP BC"),
             Instruction::JP_NZ_a16(value) => write!(f, "JP NZ,{}", value),
@@ -213,6 +225,7 @@ impl fmt::Display for Instruction {
             Instruction::CALL_a16(value) => write!(f, "CALL {}", value),
             Instruction::ADC_A_d8(value) => write!(f, "ADC A,{}", value),
             Instruction::RST_08H => write!(f, "RST 08H"),
+
             Instruction::RET_NC => write!(f, "RET NC"),
             Instruction::POP_DE => write!(f, "POP DE"),
             Instruction::JP_NC_a16(value) => write!(f, "JP NC,{}", value),
@@ -226,6 +239,7 @@ impl fmt::Display for Instruction {
             Instruction::CALL_C_a16(value) => write!(f, "CALL C,{}", value),
             Instruction::SBC_A_d8(value) => write!(f, "SBC A,{}", value),
             Instruction::RST_18H => write!(f, "RST 18H"),
+
             Instruction::LDH_pa8_A(value) => write!(f, "LDH ({}),A", value),
             Instruction::POP_HL => write!(f, "POP HL"),
             Instruction::LD_pC_A => write!(f, "LD (C),A"),
@@ -237,6 +251,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_pa16_A(value) => write!(f, "LD ({}),A", value),
             Instruction::XOR_d8(value) => write!(f, "XOR {}", value),
             Instruction::RST_28H => write!(f, "RST 28H"),
+
             Instruction::LDH_A_pa8(value) => write!(f, "LDH A,({})", value),
             Instruction::POP_AF => write!(f, "POP AF"),
             Instruction::LD_A_pC => write!(f, "LD A,(C)"),
@@ -249,7 +264,7 @@ impl fmt::Display for Instruction {
             Instruction::LD_A_pa16(value) => write!(f, "LD A,({})", value),
             Instruction::EI => write!(f, "EI"),
             Instruction::CP_d8(value) => write!(f, "CP {}", value),
-            Instruction::RST_38H => write!(f, "RST 38H")
+            Instruction::RST_38H => write!(f, "RST 38H"),
         }
     }
 }
@@ -512,7 +527,7 @@ impl fmt::Display for CBInstruction {
             CBInstruction::SET_7_H => write!(f, "SET 7,H"),
             CBInstruction::SET_7_L => write!(f, "SET 7,L"),
             CBInstruction::SET_7_pHL => write!(f, "SET 7,(pHL)"),
-            CBInstruction::SET_7_A => write!(f, "SET 7,A")
+            CBInstruction::SET_7_A => write!(f, "SET 7,A"),
         }
     }
 }

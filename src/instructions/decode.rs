@@ -1,6 +1,6 @@
 use super::arguments::*;
-use super::opcodes::Instruction;
 use super::opcodes::CBInstruction;
+use super::opcodes::Instruction;
 
 fn unused_opcode(address: usize, opcode: u8) -> Result<Instruction, String> {
     Err(format!("Unused opcode {0:02X} @ {1:04X}", opcode, address))
@@ -283,7 +283,7 @@ impl Instruction {
             0xFE => Instruction::CP_d8(d8::at(data, address + 1)),
             0xFF => Instruction::RST_38H,
 
-            _ => panic!("I'm pretty sure we covered all bytes")
+            _ => panic!("I'm pretty sure we covered all bytes"),
         };
 
         Ok(instruction)
@@ -566,6 +566,6 @@ fn decode_cb(data: &Box<[u8]>, address: usize) -> CBInstruction {
         0xFE => CBInstruction::SET_7_pHL,
         0xFF => CBInstruction::SET_7_A,
 
-        _ => panic!("I'm pretty sure we covered all bytes")
+        _ => panic!("I'm pretty sure we covered all bytes"),
     }
 }

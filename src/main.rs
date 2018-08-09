@@ -1,9 +1,9 @@
-mod instructions;
 mod analyzer;
+mod instructions;
 
 use std::env;
-use std::io::prelude::*;
 use std::fs::File;
+use std::io::prelude::*;
 
 fn get_filename() -> String {
     let mut args = env::args();
@@ -23,6 +23,6 @@ fn main() {
 
     match analyzer::analyse(&rom) {
         Ok(data) => println!("ROM Analysis successful"),
-        Err(msg) => println!("Error reading ROM: {}", msg)
+        Err(msg) => println!("Error reading ROM: {}", msg),
     }
 }

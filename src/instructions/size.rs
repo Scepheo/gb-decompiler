@@ -247,7 +247,7 @@ impl Instruction {
             Instruction::LD_A_pa16(_) => 3,
             Instruction::EI => 1,
             Instruction::CP_d8(_) => 2,
-            Instruction::RST_38H => 1
+            Instruction::RST_38H => 1,
         }
     }
 }

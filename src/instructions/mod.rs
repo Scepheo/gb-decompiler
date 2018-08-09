@@ -1,7 +1,7 @@
 mod arguments;
-mod opcodes;
-mod display;
-mod size;
 mod decode;
+mod display;
+mod opcodes;
+mod size;
 
 pub use self::opcodes::Instruction;
