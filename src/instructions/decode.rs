@@ -2,12 +2,35 @@ use super::arguments::*;
 use super::opcodes::CBInstruction;
 use super::opcodes::Instruction;
 
-fn unused_opcode(address: usize, opcode: u8) -> Result<Instruction, String> {
-    Err(format!("Unused opcode {0:02X} @ {1:04X}", opcode, address))
+#[derive(Debug, Copy, Clone)]
+pub struct DecodeError {
+    pub address: usize,
+    pub opcode: u8
+}
+
+impl ::std::fmt::Display for DecodeError {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "Unused opcode {0:02X} @ {1:04X}", self.opcode, self.address)
+    }
+}
+
+impl ::std::convert::From<DecodeError> for String {
+    fn from(error: DecodeError) -> String {
+        format!("Unused opcode {0:02X} @ {1:04X}", error.opcode, error.address)
+    }
+}
+
+fn unused_opcode(address: usize, opcode: u8) -> Result<Instruction, DecodeError> {
+    let error = DecodeError {
+        address: address,
+        opcode: opcode
+    };
+
+    Err(error)
 }
 
 impl Instruction {
-    pub fn decode_at(data: &Box<[u8]>, address: usize) -> Result<Instruction, String> {
+    pub fn decode_at(data: &Box<[u8]>, address: usize) -> Result<Instruction, DecodeError> {
         let opcode = data[address];
 
         let instruction = match opcode {

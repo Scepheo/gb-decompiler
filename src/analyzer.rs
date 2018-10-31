@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use std::slice;
 
 use instructions::Instruction;
+use instructions::DecodeError;
 
 pub struct Todo {
     start_address: usize,
@@ -30,7 +31,7 @@ impl AnalysisData {
         self.ancestors.entry(to).or_insert(Vec::new()).push(from);
     }
 
-    fn get_ancestors(&mut self, address: &usize) -> slice::Iter<usize> {
+    fn get_ancestors(&self, address: &usize) -> slice::Iter<usize> {
         self.ancestors
             .get(address)
             .map(|a| a.iter())
@@ -38,13 +39,47 @@ impl AnalysisData {
     }
 }
 
-pub fn analyse(rom: &Box<[u8]>) -> Result<AnalysisData, String> {
+pub fn analyse(rom: &Box<[u8]>) -> Result<AnalysisData, DecodeError> {
     let mut data = AnalysisData::new();
-    try!(analyse_static_paths(rom, &mut data));
-    Ok(data)
+
+    match analyse_static_paths(rom, &mut data) {
+        Ok(()) => Ok(data),
+        Err(error) => {
+            print_error(&rom, &data, error);
+            Err(error)
+        }
+    }
 }
 
-fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), String> {
+pub fn print_error(rom: &Box<[u8]>, data: &AnalysisData, error: DecodeError) {
+    let mut stack = Vec::new();
+
+    {
+        let mut current_address = error.address;
+
+        while current_address != 0x0100 {
+            let mut ancestors = data.get_ancestors(&current_address);
+            current_address = *ancestors.next().unwrap();
+            stack.push(current_address);
+        }
+    }
+
+    loop {
+        let address: usize;
+
+        match stack.pop() {
+            Some(add) => address = add,
+            None => break,
+        };
+
+        let opcode = Instruction::decode_at(&rom, address).unwrap();
+        println!("{0:04X}: {1:?}", address, opcode);
+    }
+
+    println!("{0:04X}: {1:02X}", error.address, error.opcode);
+}
+
+fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), DecodeError> {
     // Push the rom entry point
     data.todo.push(Todo {
         start_address: 0x0100,
@@ -85,7 +120,7 @@ fn get_rst_value(instruction: Instruction) -> usize {
     }
 }
 
-fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<Vec<Todo>, String> {
+fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<Vec<Todo>, DecodeError> {
     let mut next_address = todo.start_address;
     let mut result = Vec::new();
 
@@ -161,8 +196,7 @@ fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<
 
                 return Ok(result);
             }
-            Instruction::CALL_a16(value)
-            | Instruction::CALL_C_a16(value)
+            Instruction::CALL_C_a16(value)
             | Instruction::CALL_NC_a16(value)
             | Instruction::CALL_Z_a16(value)
             | Instruction::CALL_NZ_a16(value) => {
@@ -179,6 +213,17 @@ fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<
                     ..todo
                 });
                 data.add_ancestor(current_address, next_address);
+
+                return Ok(result);
+            }
+            Instruction::CALL_a16(value) => {
+                let target = value.value as usize;
+
+                result.push(Todo {
+                    start_address: target,
+                    return_address: Some(next_address),
+                });
+                data.add_ancestor(current_address, target);
 
                 return Ok(result);
             }

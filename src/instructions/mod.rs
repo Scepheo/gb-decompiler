@@ -5,3 +5,4 @@ mod opcodes;
 mod size;
 
 pub use self::opcodes::Instruction;
+pub use self::decode::DecodeError;
