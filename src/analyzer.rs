@@ -230,7 +230,13 @@ fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<
             Instruction::RET => {
                 let return_address = todo.return_address.expect("No return address found");
 
-                // Continuation already returned at call site
+                if !data.done.contains(&return_address) {
+                    result.push(Todo {
+                        start_address: return_address,
+                        return_address: None,
+                    });
+                }
+
                 data.add_ancestor(current_address, return_address);
 
                 return Ok(result);
@@ -242,7 +248,13 @@ fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: Todo) -> Result<
             | Instruction::RETI => {
                 let return_address = todo.return_address.expect("No return address found");
 
-                // Continuation already returned at call site
+                if !data.done.contains(&return_address) {
+                    result.push(Todo {
+                        start_address: return_address,
+                        return_address: None,
+                    });
+                }
+
                 data.add_ancestor(current_address, return_address);
 
                 result.push(Todo {
