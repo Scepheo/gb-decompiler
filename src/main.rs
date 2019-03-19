@@ -22,7 +22,20 @@ fn main() {
     let rom = load_rom(&filename);
 
     match analyzer::analyse(&rom) {
-        Ok(data) => println!("ROM Analysis successful"),
+        Ok(data) => {
+            println!("ROM Analysis successful");
+            log_data(&data);
+        },
         Err(msg) => println!("Error reading ROM: {}", msg),
+    }
+}
+
+fn log_data(data: &analyzer::AnalysisData) -> () {
+    if !data.unknown_jumps.is_empty() {
+        println!("Unknown jumps:");
+
+        for unknown_jump in &data.unknown_jumps {
+            println!("    {:X}", unknown_jump);
+        }
     }
 }

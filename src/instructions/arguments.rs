@@ -100,6 +100,10 @@ impl r8 {
 
 impl fmt::Display for r8 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{0:+02X}", self.value)
+        if self.value >= 0 {
+            write!(f, "+{0}", self.value)
+        } else {
+            write!(f, "{0}", self.value)
+        }
     }
 }
