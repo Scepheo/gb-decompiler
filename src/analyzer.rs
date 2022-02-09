@@ -2,8 +2,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::slice;
 
-use instructions::Instruction;
 use instructions::DecodeError;
+use instructions::Instruction;
 
 #[derive(Eq, PartialEq, Hash)]
 pub struct Todo {
@@ -141,7 +141,7 @@ fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), 
                     continue;
                 }
 
-                let mut next_todo_list = try!(analyse_path(rom, data, &todo));
+                let mut next_todo_list = analyse_path(rom, data, &todo)?;
                 data.todo.append(&mut next_todo_list);
 
                 data.done.insert(todo);
@@ -164,13 +164,17 @@ fn get_rst_value(instruction: Instruction) -> usize {
     }
 }
 
-fn analyse_path(rom: &Box<[u8]>, data: &mut AnalysisData, todo: &Todo) -> Result<Vec<Todo>, DecodeError> {
+fn analyse_path(
+    rom: &Box<[u8]>,
+    data: &mut AnalysisData,
+    todo: &Todo,
+) -> Result<Vec<Todo>, DecodeError> {
     let mut next_address = todo.start_address;
     let mut result = Vec::new();
 
     loop {
         let current_address = next_address;
-        let instruction = try!(Instruction::decode_at(&rom, current_address));
+        let instruction = Instruction::decode_at(&rom, current_address)?;
         for _ in 0..todo.return_addresses.len() {
             print!("  ");
         }

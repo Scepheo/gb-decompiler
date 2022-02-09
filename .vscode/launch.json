@@ -9,8 +9,10 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/gb-decompiler.exe",
-            "preLaunchTask": "Rust: cargo build",
-            "args": [ "${workspaceFolder}/roms/test.gb" ],
+            "preLaunchTask": "Rust: cargo build - gb-decompiler",
+            "args": [
+                "${workspaceFolder}/roms/test.gb"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

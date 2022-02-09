@@ -5,25 +5,32 @@ use super::opcodes::Instruction;
 #[derive(Debug, Copy, Clone)]
 pub struct DecodeError {
     pub address: usize,
-    pub opcode: u8
+    pub opcode: u8,
 }
 
 impl ::std::fmt::Display for DecodeError {
     fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-        write!(f, "Unused opcode {0:02X} @ {1:04X}", self.opcode, self.address)
+        write!(
+            f,
+            "Unused opcode {0:02X} @ {1:04X}",
+            self.opcode, self.address
+        )
     }
 }
 
 impl ::std::convert::From<DecodeError> for String {
     fn from(error: DecodeError) -> String {
-        format!("Unused opcode {0:02X} @ {1:04X}", error.opcode, error.address)
+        format!(
+            "Unused opcode {0:02X} @ {1:04X}",
+            error.opcode, error.address
+        )
     }
 }
 
 fn unused_opcode(address: usize, opcode: u8) -> Result<Instruction, DecodeError> {
     let error = DecodeError {
         address: address,
-        opcode: opcode
+        opcode: opcode,
     };
 
     Err(error)
@@ -305,8 +312,6 @@ impl Instruction {
             0xFD => return unused_opcode(address, opcode),
             0xFE => Instruction::CP_d8(d8::at(data, address + 1)),
             0xFF => Instruction::RST_38H,
-
-            _ => panic!("I'm pretty sure we covered all bytes"),
         };
 
         Ok(instruction)
@@ -588,7 +593,5 @@ fn decode_cb(data: &Box<[u8]>, address: usize) -> CBInstruction {
         0xFD => CBInstruction::SET_7_L,
         0xFE => CBInstruction::SET_7_pHL,
         0xFF => CBInstruction::SET_7_A,
-
-        _ => panic!("I'm pretty sure we covered all bytes"),
     }
 }
