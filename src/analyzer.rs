@@ -1,9 +1,95 @@
+use data::Data;
+use disassembly;
+use gb::*;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::slice;
 
-use instructions::DecodeError;
-use instructions::Instruction;
+pub trait RomAnalyzer {
+    fn run(&self, cartridge: &Cartridge, data: &mut Data) -> bool;
+
+    fn run_until_unchanged(&self, cartridge: &Cartridge, data: &mut Data) -> bool {
+        let mut any_changes = false;
+
+        loop {
+            let changes = self.run(cartridge, data);
+            any_changes |= changes;
+
+            if !changes {
+                break;
+            }
+        }
+
+        any_changes
+    }
+}
+
+struct FunctionAnalyzer;
+
+impl RomAnalyzer for FunctionAnalyzer {
+    fn run(&self, cart: &Cartridge, data: &mut Data) -> bool {
+        let (is_new, entrypoint) = data.functions.get_or_add(Cartridge::ENTRY_POINT);
+
+        if is_new {
+            entrypoint.name = "entrypoint".to_string();
+            true
+        } else {
+            analyze_functions(cart, data)
+        }
+    }
+}
+
+fn analyze_functions(cart: &Cartridge, data: &mut Data) -> bool {
+    let known_function_addresses: Vec<_> =
+        data.functions.iter().map(|(address, _)| *address).collect();
+
+    let mut changes = false;
+
+    for function_address in known_function_addresses.into_iter() {
+        let instructions = disassembly::collect_instructions(cart, data, function_address);
+
+        for instruction in instructions.into_iter() {
+            if let Some(call_address) = instruction.call_target() {
+                let (is_new_function, called_function) = data.functions.get_or_add(call_address);
+                changes |= is_new_function;
+                let is_new_callsite = called_function.call_sites.insert(instruction.address);
+                changes |= is_new_callsite;
+            }
+
+            if instruction.is_return() {
+                let function = data.functions.get_mut(function_address).unwrap();
+                if !function.can_return {
+                    function.can_return = true;
+                    changes = true;
+                }
+            }
+        }
+    }
+
+    changes
+}
+
+struct CompositeAnalyzer {
+    inner: Vec<Box<dyn RomAnalyzer>>,
+}
+
+impl CompositeAnalyzer {
+    pub fn new() -> Self {
+        Self { inner: Vec::new() }
+    }
+
+    pub fn push<T: Into<Box<dyn RomAnalyzer>>>(&mut self, analyzer: T) {
+        self.inner.push(analyzer.into())
+    }
+}
+
+impl RomAnalyzer for CompositeAnalyzer {
+    fn run(&self, cartridge: &Cartridge, data: &mut Data) -> bool {
+        self.inner.iter().fold(false, |changes, analyzer| {
+            changes || analyzer.run_until_unchanged(cartridge, data)
+        })
+    }
+}
 
 #[derive(Eq, PartialEq, Hash)]
 pub struct Todo {
@@ -84,19 +170,19 @@ impl AnalysisData {
     }
 }
 
-pub fn analyse(rom: &Box<[u8]>) -> Result<AnalysisData, DecodeError> {
+pub fn analyse(cartridge: &Cartridge) -> Result<AnalysisData, DecodeError> {
     let mut data = AnalysisData::new();
 
-    match analyse_static_paths(rom, &mut data) {
+    match analyse_static_paths(cartridge, &mut data) {
         Ok(()) => Ok(data),
         Err(error) => {
-            print_error(&rom, &data, error);
+            print_error(&cartridge, &data, error);
             Err(error)
         }
     }
 }
 
-pub fn print_error(rom: &Box<[u8]>, data: &AnalysisData, error: DecodeError) {
+pub fn print_error(cartridge: &Cartridge, data: &AnalysisData, error: DecodeError) {
     println!("");
     println!("Error trace:");
     println!("---------------------------------------------------------------");
@@ -121,14 +207,14 @@ pub fn print_error(rom: &Box<[u8]>, data: &AnalysisData, error: DecodeError) {
             None => break,
         };
 
-        let opcode = Instruction::decode_at(&rom, address).unwrap();
+        let opcode = OpCode::decode_at(&cartridge, address).unwrap();
         println!("{0:04X}: {1}", address, opcode);
     }
 
     println!("{0:04X}: {1:02X}", error.address, error.opcode);
 }
 
-fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), DecodeError> {
+fn analyse_static_paths(cartridge: &Cartridge, data: &mut AnalysisData) -> Result<(), DecodeError> {
     // Push the rom entry point
     let entry_point = Todo::new(0x0100);
     data.todo.push(entry_point);
@@ -141,7 +227,7 @@ fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), 
                     continue;
                 }
 
-                let mut next_todo_list = analyse_path(rom, data, &todo)?;
+                let mut next_todo_list = analyse_path(cartridge, data, &todo)?;
                 data.todo.append(&mut next_todo_list);
 
                 data.done.insert(todo);
@@ -150,22 +236,22 @@ fn analyse_static_paths(rom: &Box<[u8]>, data: &mut AnalysisData) -> Result<(), 
     }
 }
 
-fn get_rst_value(instruction: Instruction) -> usize {
+fn get_rst_value(instruction: OpCode) -> usize {
     match instruction {
-        Instruction::RST_00H => 0x00,
-        Instruction::RST_08H => 0x08,
-        Instruction::RST_10H => 0x10,
-        Instruction::RST_18H => 0x18,
-        Instruction::RST_20H => 0x20,
-        Instruction::RST_28H => 0x28,
-        Instruction::RST_30H => 0x30,
-        Instruction::RST_38H => 0x38,
+        OpCode::RST_00H => 0x00,
+        OpCode::RST_08H => 0x08,
+        OpCode::RST_10H => 0x10,
+        OpCode::RST_18H => 0x18,
+        OpCode::RST_20H => 0x20,
+        OpCode::RST_28H => 0x28,
+        OpCode::RST_30H => 0x30,
+        OpCode::RST_38H => 0x38,
         _ => panic!("Not a RST instruction"),
     }
 }
 
 fn analyse_path(
-    rom: &Box<[u8]>,
+    cartridge: &Cartridge,
     data: &mut AnalysisData,
     todo: &Todo,
 ) -> Result<Vec<Todo>, DecodeError> {
@@ -174,7 +260,7 @@ fn analyse_path(
 
     loop {
         let current_address = next_address;
-        let instruction = Instruction::decode_at(&rom, current_address)?;
+        let instruction = OpCode::decode_at(&cartridge, current_address)?;
         for _ in 0..todo.return_addresses.len() {
             print!("  ");
         }
@@ -182,7 +268,7 @@ fn analyse_path(
         next_address += instruction.size();
 
         match instruction {
-            Instruction::JP_a16(value) => {
+            OpCode::JP_a16(value) => {
                 let target = value.value as usize;
 
                 result.push(todo.continue_from(target));
@@ -190,10 +276,10 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::JP_C_a16(value)
-            | Instruction::JP_NC_a16(value)
-            | Instruction::JP_Z_a16(value)
-            | Instruction::JP_NZ_a16(value) => {
+            OpCode::JP_C_a16(value)
+            | OpCode::JP_NC_a16(value)
+            | OpCode::JP_Z_a16(value)
+            | OpCode::JP_NZ_a16(value) => {
                 let target = value.value as usize;
 
                 result.push(todo.continue_from(target));
@@ -204,11 +290,11 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::JP_pHL => {
+            OpCode::JP_pHL => {
                 data.unknown_jumps.push(current_address);
                 return Ok(result);
             }
-            Instruction::JR_r8(value) => {
+            OpCode::JR_r8(value) => {
                 let target = next_address.wrapping_add(value.value as usize);
 
                 result.push(todo.continue_from(target));
@@ -216,10 +302,10 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::JR_C_r8(value)
-            | Instruction::JR_NC_r8(value)
-            | Instruction::JR_Z_r8(value)
-            | Instruction::JR_NZ_r8(value) => {
+            OpCode::JR_C_r8(value)
+            | OpCode::JR_NC_r8(value)
+            | OpCode::JR_Z_r8(value)
+            | OpCode::JR_NZ_r8(value) => {
                 let target = next_address.wrapping_add(value.value as usize);
 
                 result.push(todo.continue_from(target));
@@ -230,10 +316,10 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::CALL_C_a16(value)
-            | Instruction::CALL_NC_a16(value)
-            | Instruction::CALL_Z_a16(value)
-            | Instruction::CALL_NZ_a16(value) => {
+            OpCode::CALL_C_a16(value)
+            | OpCode::CALL_NC_a16(value)
+            | OpCode::CALL_Z_a16(value)
+            | OpCode::CALL_NZ_a16(value) => {
                 let target = value.value as usize;
 
                 result.push(todo.call(target, next_address));
@@ -244,7 +330,7 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::CALL_a16(value) => {
+            OpCode::CALL_a16(value) => {
                 let target = value.value as usize;
 
                 result.push(todo.call(target, next_address));
@@ -252,7 +338,7 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::RET => {
+            OpCode::RET => {
                 if !todo.has_return() {
                     panic!("No return address while at return instruction");
                 }
@@ -265,11 +351,7 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::RET_C
-            | Instruction::RET_NC
-            | Instruction::RET_Z
-            | Instruction::RET_NZ
-            | Instruction::RETI => {
+            OpCode::RET_C | OpCode::RET_NC | OpCode::RET_Z | OpCode::RET_NZ | OpCode::RETI => {
                 if !todo.has_return() {
                     panic!("No return address while at return instruction");
                 }
@@ -285,14 +367,14 @@ fn analyse_path(
 
                 return Ok(result);
             }
-            Instruction::RST_00H
-            | Instruction::RST_08H
-            | Instruction::RST_10H
-            | Instruction::RST_18H
-            | Instruction::RST_20H
-            | Instruction::RST_28H
-            | Instruction::RST_30H
-            | Instruction::RST_38H => {
+            OpCode::RST_00H
+            | OpCode::RST_08H
+            | OpCode::RST_10H
+            | OpCode::RST_18H
+            | OpCode::RST_20H
+            | OpCode::RST_28H
+            | OpCode::RST_30H
+            | OpCode::RST_38H => {
                 let value = get_rst_value(instruction);
 
                 result.push(todo.call(value, next_address));

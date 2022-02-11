@@ -1,6 +1,10 @@
 mod analyzer;
-mod instructions;
+mod data;
+mod disassembly;
+mod gb;
+mod instruction_walker;
 
+use gb::Cartridge;
 use std::env;
 use std::fs::File;
 use std::io::prelude::*;
@@ -10,11 +14,11 @@ fn get_filename() -> String {
     args.nth(1).expect("Filename is required")
 }
 
-fn load_rom(filename: &str) -> Box<[u8]> {
+fn load_rom(filename: &str) -> Cartridge {
     let mut file = File::open(&filename).expect("file not found");
     let mut data = Vec::new();
     file.read_to_end(&mut data).expect("error reading file");
-    data.into_boxed_slice()
+    Cartridge::new(data)
 }
 
 fn main() {
@@ -25,7 +29,7 @@ fn main() {
         Ok(data) => {
             println!("ROM Analysis successful");
             log_data(&data);
-        },
+        }
         Err(msg) => println!("Error reading ROM: {}", msg),
     }
 }

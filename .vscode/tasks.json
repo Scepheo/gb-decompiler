@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "debug build",
+            "type": "cargo",
+            "subcommand": "build",
+            "problemMatcher": [],
+            "group": "build",
+        }
+    ]
+}
